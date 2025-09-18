@@ -1,34 +1,36 @@
-cat > /tmp/install_masterobot_clean.sh <<'SH'
 #!/bin/bash
 set -e
 
-# Scarica e lancia lo script originale masterobot
+echo ">>> Fix pacchetti bloccati (dpkg / apt)..."
+sudo dpkg --configure -a || true
+sudo apt-get install -f -y || true
+sudo apt-get update
+sudo apt-get upgrade -y
+sudo apt-get autoremove -y
+sudo apt-get autoclean
+
+echo ">>> Scarico e avvio script masterobot..."
 wget -O /tmp/install_masterobot.sh https://pastebin.com/raw/sYefTG5A
 sed -i 's/\r$//' /tmp/install_masterobot.sh
 /bin/bash /tmp/install_masterobot.sh
 
-# Abilita servizi utente
+echo ">>> Abilito servizi utente..."
 sudo loginctl enable-linger pi
 systemctl --user daemon-reload
 systemctl --user enable masterobot
 systemctl --user start masterobot
 
-# Abilita bluetooth
+echo ">>> Abilito bluetooth..."
 sudo systemctl enable bluetooth
 sudo systemctl start bluetooth
 
-# Abilita pipewire
+echo ">>> Abilito pipewire..."
 systemctl --user enable --now pipewire wireplumber pipewire-pulse
 
-# Messaggio finale
 echo "----------------------------------------------------"
 echo " Installazione completata!"
-echo " Ora esegui manualmente:"
+echo " Esegui ora:"
 echo "   sudo raspi-config"
-echo " Vai su 'System Options' e abilita il login automatico."
+echo " Vai su 'System Options' e attiva il login automatico."
 echo " Poi riavvia con: sudo reboot"
 echo "----------------------------------------------------"
-SH
-
-chmod +x /tmp/install_masterobot_clean.sh
-bash /tmp/install_masterobot_clean.sh
